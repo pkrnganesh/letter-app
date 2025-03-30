@@ -67,7 +67,7 @@ exports.googleDriveCallback = async (req, res) => {
     await user.save();
 
     // ✅ Redirect user to Dashboard
-    res.redirect("http://localhost:5173/dashboard");
+    res.redirect("https://letter-app-beta.vercel.app/dashboard");
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to get tokens" });
