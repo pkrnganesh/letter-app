@@ -67,7 +67,7 @@ exports.googleDriveCallback = async (req, res) => {
     await user.save();
 
     // ✅ Redirect user to Dashboard
-  res.redirect("https://letter-app-git-main-pkrn-ganeshs-projects.vercel.app/dashboard");
+    res.redirect("https://letter-app-beta.vercel.app/dashboard");
 
     // res.redirect("http://localhost:5173/dashboard");
   } catch (err) {
