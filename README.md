@@ -5,7 +5,10 @@
 A full-stack web application where users can **Sign in with Google**, **write letters**, **save drafts locally**, and **save the final letter to their Google Drive**.
 
 ---
+## 🎬 Demo
 
+[📽️ [Watch Full Demo on Loom](https://www.loom.com/share/7f38c9520c1647ef9330544854352807?sid=c74911b3-6697-488f-abd4-5682661d459a)
+](https://www.loom.com/share/41a10b83b5f54c5389e95ba1a1a52369?sid=8e7eef0c-30ca-430a-b52f-f2c8586db1eb)
 ## 🚀 Features
 
 ✅ Google OAuth Login  
