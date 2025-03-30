@@ -1,36 +1,3 @@
-// import React from "react";
-// import { GoogleLogin } from "@react-oauth/google";
-// import axios from "axios";
-
-// const Login = () => {
-
-//   const handleSuccess = async (credentialResponse) => {
-//     try {
-//       // Step 1: Login → Get our own JWT Token
-//       const res = await axios.post("http://localhost:5000/api/auth", {
-//         token: credentialResponse.credential,
-//       });
-
-//       localStorage.setItem("token", res.data.accessToken);
-
-//       // Step 2: Call backend → Start Drive Consent flow
-//       window.location.href = `http://localhost:5000/api/auth/init?token=${res.data.accessToken}`;
-//     } catch (err) {
-//       console.error(err);
-//       alert("Login Failed!");
-//     }
-//   };
-
-//   return (
-//     <div className="container">
-//       <h1>Welcome to Letter App</h1>
-//       <p>Login with Google to continue</p>
-//       <GoogleLogin onSuccess={handleSuccess} onError={() => alert("Login Failed")} />
-//     </div>
-//   );
-// };
-
-// export default Login;
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
@@ -39,11 +6,11 @@ import logo from "../assets/warrantmelogo.svg";
 const Login = () => {
   const handleSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth", {
-        token: credentialResponse.credential,
-      });
+        const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth`, {
+            token: credentialResponse.credential,
+          });
       localStorage.setItem("token", res.data.accessToken);
-      window.location.href = `http://localhost:5000/api/auth/init?token=${res.data.accessToken}`;
+      window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/init?token=${res.data.accessToken}`;
     } catch (err) {
       console.error(err);
       alert("Login Failed!");
