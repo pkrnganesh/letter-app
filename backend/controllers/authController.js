@@ -55,8 +55,30 @@ exports.googleDriveAuth = (req, res) => {
 };
 
 // OAuth Callback - Save tokens to DB
+// exports.googleDriveCallback = async (req, res) => {
+//   const { code, state } = req.query;
+//   try {
+//     const { tokens } = await oAuth2Client.getToken(code);
+//     const user = await User.findById(state);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     user.googleAccessToken = tokens.access_token;
+//     user.googleRefreshToken = tokens.refresh_token;
+//     await user.save();
+
+//     // ✅ Redirect user to Dashboard
+//     // res.redirect("https://letter-app-beta.vercel.app/dashboard");
+//     res.redirect(`https://letter-app-beta.vercel.app/?token=${accessToken}`);
+//     // res.redirect("http://localhost:5173/dashboard");
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Failed to get tokens" });
+//   }
+// };
+
+// OAuth Callback - Save tokens to DB
 exports.googleDriveCallback = async (req, res) => {
-  const { code, state } = req.query;
+  const { code, state, redirectUrl } = req.query;
   try {
     const { tokens } = await oAuth2Client.getToken(code);
     const user = await User.findById(state);
@@ -66,13 +88,18 @@ exports.googleDriveCallback = async (req, res) => {
     user.googleRefreshToken = tokens.refresh_token;
     await user.save();
 
-    // ✅ Redirect user to Dashboard
-    // res.redirect("https://letter-app-beta.vercel.app/dashboard");
-    res.redirect(`https://letter-app-beta.vercel.app/?token=${accessToken}`);
-    // res.redirect("http://localhost:5173/dashboard");
+    // ✅ Generate new JWT token to pass to frontend
+    const newAccessToken = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // ✅ Redirect user back to frontend dashboard with token
+    const redirect = redirectUrl || "https://letter-app-beta.vercel.app/dashboard";
+    res.redirect(`${redirect}?token=${newAccessToken}`);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to get tokens" });
   }
 };
-
