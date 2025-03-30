@@ -6,11 +6,11 @@ import logo from "../assets/warrantmelogo.svg";
 const Login = () => {
   const handleSuccess = async (credentialResponse) => {
     try {
-        const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth`, {
-            token: credentialResponse.credential,
-          });
+      const res = await axios.post("https://letter-app-t13p.onrender.com/api/auth", {
+        token: credentialResponse.credential,
+      });
       localStorage.setItem("token", res.data.accessToken);
-      window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/init?token=${res.data.accessToken}`;
+      window.location.href = `https://letter-app-t13p.onrender.com/api/auth/init?token=${res.data.accessToken}`;
     } catch (err) {
       console.error(err);
       alert("Login Failed!");
