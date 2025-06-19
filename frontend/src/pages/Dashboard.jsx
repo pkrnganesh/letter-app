@@ -21,7 +21,10 @@ const Dashboard = () => {
     const fetchLetters = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://letter-app-t13p.onrender.com/api/letters/list", {
+        // const res = await axios.get("https://letter-app-t13p.onrender.com/api/letters/list", {
+        //   headers: { Authorization: `Bearer ${token}` },
+        // });
+        const res = await axios.get("http://localhost:5000/api/letters/list", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSavedLetters(res.data.files);
@@ -60,7 +63,8 @@ const Dashboard = () => {
       const token = localStorage.getItem("token");
 
       const res = await axios.post(
-        "https://letter-app-t13p.onrender.com/api/letters/save",
+        // "https://letter-app-t13p.onrender.com/api/letters/save",
+        "http://localhost:5000/api/letters/save",
         { content },
         {
           headers: { Authorization: `Bearer ${token}` },

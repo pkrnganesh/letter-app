@@ -95,7 +95,8 @@ const Login = () => {
     try {
       // Step 1: Login → Get JWT token
       const res = await axios.post(
-        "https://letter-app-t13p.onrender.com/api/auth",
+        // "https://letter-app-t13p.onrender.com/api/auth",
+        "http://localhost:5000/api/auth",
         { token: credentialResponse.credential }
       );
 
@@ -103,7 +104,9 @@ const Login = () => {
       localStorage.setItem("token", token);
 
       // Step 2: Start Drive Consent Flow with redirect URL
-      window.location.href = `https://letter-app-t13p.onrender.com/api/auth/init?token=${token}&redirectUrl=https://letter-app-beta.vercel.app/dashboard`;
+      // window.location.href = `https://letter-app-t13p.onrender.com/api/auth/init?token=${token}&redirectUrl=https://letter-app-beta.vercel.app/dashboard`;
+      window.location.href = `http://localhost:5000/api/auth/init?token=${token}&redirectUrl=http://localhost:5173/dashboard`;
+
     } catch (err) {
       console.error(err);
       alert("Login Failed!");

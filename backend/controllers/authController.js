@@ -96,7 +96,7 @@ exports.googleDriveCallback = async (req, res) => {
     );
 
     // ✅ Redirect user back to frontend dashboard with token
-    const redirect = redirectUrl || "https://letter-app-beta.vercel.app/dashboard";
+    const redirect = redirectUrl || "http://localhost:5173/dashboard";
     res.redirect(`${redirect}?token=${newAccessToken}`);
   } catch (err) {
     console.error(err);
