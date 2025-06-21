@@ -1,12 +1,31 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import logo from "../assets/warrantmelogo.svg";
+
+const quotes = [
+  "💡 Reflect. Write. Grow.",
+  "✍️ Express your thoughts clearly.",
+  "📔 A diary a day keeps the chaos away.",
+  "🌓 Your thoughts deserve a space.",
+  "🌠 Even small entries hold big emotions."
+];
 
 const Dashboard = () => {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [drafts, setDrafts] = useState([]);
   const [savedLetters, setSavedLetters] = useState([]);
+  const [view, setView] = useState("editor");
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % quotes.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const savedDrafts = JSON.parse(localStorage.getItem("letterDrafts")) || [];
@@ -17,295 +36,272 @@ const Dashboard = () => {
     localStorage.setItem("letterDrafts", JSON.stringify(drafts));
   }, [drafts]);
 
-  useEffect(() => {
-    const fetchLetters = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        // const res = await axios.get("https://letter-app-t13p.onrender.com/api/letters/list", {
-        //   headers: { Authorization: `Bearer ${token}` },
-        // });
-        const res = await axios.get("http://localhost:5000/api/letters/list", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setSavedLetters(res.data.files);
-      } catch (err) {
-        console.error("Error fetching letters", err);
-      }
-    };
+  const fetchLetters = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/api/letters/list", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSavedLetters(res.data.files);
+    } catch (err) {
+      toast.error("❌ Failed to fetch entries.");
+    }
+  };
 
+  useEffect(() => {
     fetchLetters();
   }, []);
 
   const handleSaveDraft = () => {
     if (content.trim()) {
-      const newDraft = {
-        id: Date.now(),
-        content,
-      };
+      const newDraft = { id: Date.now(), content };
       setDrafts([newDraft, ...drafts]);
       setContent("");
-      alert("✅ Draft saved locally");
+      toast.success("✅ Draft saved locally!");
     }
   };
 
   const handleDeleteDraft = (id) => {
     const updated = drafts.filter((d) => d.id !== id);
     setDrafts(updated);
+    toast.info("🗑️ Draft deleted");
   };
 
   const handleLoadDraft = (draftContent) => {
     setContent(draftContent);
+    setView("editor");
+    toast("✏️ Draft loaded");
   };
 
   const handleSave = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-
-      const res = await axios.post(
-        // "https://letter-app-t13p.onrender.com/api/letters/save",
+      await axios.post(
         "http://localhost:5000/api/letters/save",
         { content },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      alert("✅ Letter saved to Google Drive!");
-      console.log("File Info:", res.data.file);
+      toast.success("✅ Saved to Google Drive!");
       setContent("");
+      await fetchLetters();
     } catch (err) {
-      console.error(err);
-      alert("❌ Failed to save letter.");
+      toast.error("❌ Save failed.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#0F1115",
-        color: "white",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          padding: "1rem 2rem",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderBottom: "1px solid #27272a",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <img src={logo} alt="WarrantyMe" style={{ width: "40px" }} />
-          <h2 style={{ margin: 0 }}>WarrantyMe Letters</h2>
-        </div>
-        <button
-          onClick={() => {
-            localStorage.clear();
-            window.location.href = "/";
-          }}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#ef4444",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
-      </header>
+    <>
+      <ToastContainer position="bottom-right" autoClose={3000} theme="dark" />
+      <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap" rel="stylesheet" />
+      <style>{`
+        * {
+          font-family: 'Rubik', sans-serif;
+        }
 
-      {/* Editor */}
-      <main
-        style={{
-          flex: 1,
+        @media (max-width: 768px) {
+          .layout {
+            flex-direction: column;
+          }
+          .sidebar {
+            width: 100% !important;
+            flex-direction: row;
+            overflow-x: auto;
+            justify-content: space-around;
+            padding: 1rem !important;
+          }
+          .sidebar button {
+            flex: 1;
+            font-size: 0.85rem;
+          }
+          .main {
+            padding: 1rem !important;
+          }
+        }
+      `}</style>
+
+      <div className="layout" style={{
+        display: "flex",
+        minHeight: "100vh",
+        background: "#0F172A",
+        color: "#F1F5F9"
+      }}>
+        {/* Sidebar */}
+        <aside className="sidebar" style={{
+          width: "260px",
+          background: "#1E293B",
+          padding: "2rem 1.5rem",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "2rem",
-        }}
-      >
-        <h3 style={{ marginBottom: "1rem", color: "#F97316" }}>📄 Write Your Letter</h3>
-        <textarea
-          placeholder="Start writing here..."
-          style={{
-            width: "80%",
-            maxWidth: "900px",
-            height: "400px",
-            padding: "1rem",
-            fontSize: "16px",
-            borderRadius: "8px",
-            border: "1px solid #444",
-            backgroundColor: "#1C1E22",
-            color: "white",
-            resize: "none",
-          }}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-
-        <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+          gap: "1rem",
+          borderRight: "1px solid #334155",
+          flexShrink: 0,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {/* <img src={logo} alt="Smart Diary" style={{ width: "30px" }} /> */}
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 600, color: "#FACC15" }}>Smart Diary</h2>
+          </div>
+          {["editor", "drafts", "drive"].map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              style={{
+                background: view === v ? "#F97316" : "#334155",
+                color: "white",
+                padding: "0.75rem",
+                borderRadius: "8px",
+                border: "none",
+                fontWeight: "bold",
+                transition: "0.3s"
+              }}
+            >
+              {v === "editor" ? "✍️ Write" : v === "drafts" ? "🗂 Drafts" : "☁️ Drive"}
+            </button>
+          ))}
           <button
-            onClick={handleSaveDraft}
-            disabled={!content}
+            onClick={() => {
+              localStorage.removeItem("token");
+              window.location.href = "/";
+            }}
             style={{
-              padding: "12px 20px",
-              backgroundColor: "#f97316",
+              marginTop: "auto",
+              backgroundColor: "#EF4444",
+              padding: "0.75rem",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              cursor: !content ? "not-allowed" : "pointer",
-              fontWeight: "bold",
+              fontWeight: "bold"
             }}
           >
-            Save Draft
+            🚪 Logout
           </button>
+        </aside>
 
-          <button
-            onClick={handleSave}
-            disabled={loading || !content}
-            style={{
-              padding: "12px 20px",
-              backgroundColor: loading ? "#a5b4fc" : "#4f46e5",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: loading ? "not-allowed" : "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            {loading ? "Saving..." : "Save to Google Drive"}
-          </button>
-        </div>
+        {/* Main */}
+        <main className="main" style={{ flex: 1, padding: "2rem", overflowY: "auto" }}>
+          <p style={{ color: "#94A3B8", textAlign: "center", marginBottom: "1rem" }}>
+            {quotes[quoteIndex]}
+          </p>
 
-        {/* Drafts */}
-        {drafts.length > 0 && (
-          <div
-            style={{
-              marginTop: "3rem",
-              width: "80%",
-              maxWidth: "900px",
-              textAlign: "left",
-            }}
-          >
-            <h4 style={{ color: "#F97316" }}>📄 Saved Drafts</h4>
-            {drafts.map((draft) => (
-              <div
-                key={draft.id}
+          {view === "editor" && (
+            <div>
+              <h3 style={{ fontSize: "1.4rem", color: "#F97316", marginBottom: "1rem" }}>📓 New Entry</h3>
+              <textarea
+                placeholder="Start typing your thoughts..."
                 style={{
-                  backgroundColor: "#1C1E22",
+                  width: "100%",
+                  height: "250px",
                   padding: "1rem",
-                  marginTop: "1rem",
-                  borderRadius: "8px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  fontSize: "15px",
+                  borderRadius: "10px",
+                  border: "1px solid #334155",
+                  background: "#1E293B",
+                  color: "white",
+                  resize: "none"
                 }}
-              >
-                <p
-                  style={{
-                    color: "#eee",
-                    maxWidth: "75%",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {draft.content}
-                </p>
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <button
-                    onClick={() => handleLoadDraft(draft.content)}
-                    style={{
-                      backgroundColor: "#4f46e5",
-                      color: "white",
-                      border: "none",
-                      padding: "5px 10px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Load
-                  </button>
-                  <button
-                    onClick={() => handleDeleteDraft(draft.id)}
-                    style={{
-                      backgroundColor: "#ef4444",
-                      color: "white",
-                      border: "none",
-                      padding: "5px 10px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Saved Letters */}
-        {savedLetters.length > 0 && (
-          <div
-            style={{
-              marginTop: "3rem",
-              width: "80%",
-              maxWidth: "900px",
-              textAlign: "left",
-            }}
-          >
-            <h4 style={{ color: "#F97316" }}>📂 Saved Letters in Drive</h4>
-            {savedLetters.map((file) => (
-              <div
-                key={file.id}
-                style={{
-                  backgroundColor: "#1C1E22",
-                  padding: "1rem",
-                  marginTop: "1rem",
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              />
+              <div style={{ marginTop: "1rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                <button onClick={handleSaveDraft} disabled={!content} style={{
+                  background: "#FACC15",
+                  color: "#1E293B",
+                  padding: "10px 20px",
                   borderRadius: "8px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <p style={{ color: "#eee" }}>{file.name}</p>
-                <a
-                  href={file.webViewLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    backgroundColor: "#4f46e5",
-                    color: "white",
-                    padding: "5px 10px",
-                    borderRadius: "5px",
-                    textDecoration: "none",
-                  }}
-                >
-                  View
-                </a>
+                  fontWeight: "bold",
+                  border: "none",
+                  cursor: !content ? "not-allowed" : "pointer"
+                }}>
+                  Save Draft
+                </button>
+                <button onClick={handleSave} disabled={loading || !content} style={{
+                  background: "#3B82F6",
+                  color: "white",
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer"
+                }}>
+                  {loading ? "Saving..." : "Save to Drive"}
+                </button>
               </div>
-            ))}
-          </div>
-        )}
-      </main>
+            </div>
+          )}
 
-      {/* Footer */}
-      <footer style={{ textAlign: "center", padding: "1rem", color: "#9CA3AF" }}>
-        © 2025 WarrantyMe Letters
-      </footer>
-    </div>
+          {view === "drafts" && (
+            <div>
+              <h3 style={{ fontSize: "1.4rem", color: "#F97316", marginBottom: "1rem" }}>🗂 Drafts</h3>
+              {drafts.length === 0 ? (
+                <p>No drafts yet.</p>
+              ) : (
+                drafts.map((draft) => (
+                  <div key={draft.id} style={{
+                    background: "#1E293B",
+                    borderRadius: "8px",
+                    padding: "1rem",
+                    marginBottom: "1rem",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap"
+                  }}>
+                    <p style={{
+                      color: "#CBD5E1",
+                      margin: 0,
+                      maxWidth: "70%",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap"
+                    }}>{draft.content}</p>
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <button onClick={() => handleLoadDraft(draft.content)} style={{
+                        background: "#60A5FA", color: "white", borderRadius: "5px", padding: "6px 12px", border: "none"
+                      }}>Load</button>
+                      <button onClick={() => handleDeleteDraft(draft.id)} style={{
+                        background: "#EF4444", color: "white", borderRadius: "5px", padding: "6px 12px", border: "none"
+                      }}>Delete</button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {view === "drive" && (
+            <div>
+              <h3 style={{ fontSize: "1.4rem", color: "#F97316", marginBottom: "1rem" }}>☁️ Drive Entries</h3>
+              {savedLetters.length === 0 ? (
+                <p>No entries yet.</p>
+              ) : (
+                savedLetters.map((file) => (
+                  <div key={file.id} style={{
+                    background: "#1E293B",
+                    borderRadius: "8px",
+                    padding: "1rem",
+                    marginBottom: "1rem",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                  }}>
+                    <p style={{ margin: 0, color: "#E2E8F0" }}>{file.name}</p>
+                    <a href={file.webViewLink} target="_blank" rel="noreferrer" style={{
+                      background: "#3B82F6",
+                      color: "white",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      textDecoration: "none"
+                    }}>View</a>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </main>
+      </div>
+    </>
   );
 };
 

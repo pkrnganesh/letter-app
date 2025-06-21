@@ -25,8 +25,9 @@ exports.uploadFileToDrive = async (content, accessToken, refreshToken, userId) =
     });
 
     const drive = google.drive({ version: "v3", auth: oAuth2Client });
+    const today = new Date().toISOString().split("T")[0]; // "2025-06-19"
     const fileMetadata = {
-      name: `letter_${Date.now()}.txt`,
+      name: `Letter - ${today}.txt`, // ✅ Updated name here
     };
     const media = {
       mimeType: "text/plain",
